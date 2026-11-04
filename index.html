@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="玉雪">
+<meta name="theme-color" content="#c9b8f0">
+<title>玉雪 · 我的工作台</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon/icon-192.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --pink:#ffc7dd;--blue:#b8d4ff;--purple:#d4c2ff;
+  --bg1:#fdeef6;--bg2:#e8f1ff;--bg3:#f0e9ff;
+  --ink:#4a3f66;--ink2:#7a6f96;--card:rgba(255,255,255,.72);
+  --hi:#ff7bac;--mid:#7ea8f0;--lo:#9b8ec4;--green:#63c98a;--red:#ff8fa8;
+}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 45%,var(--bg3) 100%) fixed;
+  color:var(--ink);min-height:100vh}
+#app{display:flex;min-height:100vh}
+nav{width:78px;background:rgba(255,255,255,.55);backdrop-filter:blur(14px);
+  border-right:1px solid rgba(255,255,255,.8);display:flex;flex-direction:column;align-items:center;
+  padding:14px 0 20px;gap:5px;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:50;flex-shrink:0}
+.logo{width:46px;height:46px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:8px;background:linear-gradient(135deg,var(--pink),var(--blue) 50%,var(--purple));
+  box-shadow:0 4px 14px rgba(180,150,230,.35)}
+.nav-item{width:60px;padding:8px 0;border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-size:10px;color:var(--ink2);cursor:pointer;transition:.2s;border:2px solid transparent;flex-shrink:0}
+.nav-item .ico{font-size:19px}
+.nav-item:hover{background:rgba(255,255,255,.7)}
+.nav-item.active{background:linear-gradient(135deg,rgba(255,199,221,.5),rgba(212,194,255,.5));
+  color:var(--ink);font-weight:600;border-color:rgba(255,255,255,.9)}
+main{flex:1;padding:22px 18px 90px;max-width:900px;margin:0 auto;width:100%}
+.page{display:none;animation:fadein .3s}
+.page.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1.pg-title{font-size:22px;margin-bottom:3px}
+.pg-sub{font-size:12px;color:var(--ink2);margin-bottom:15px}
+.card{background:var(--card);backdrop-filter:blur(10px);border-radius:18px;padding:16px;
+  box-shadow:0 6px 20px rgba(170,150,220,.12);border:1px solid rgba(255,255,255,.85);margin-bottom:14px}
+.card h2{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+button{border:none;border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;
+  background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-weight:600;transition:.15s;flex-shrink:0}
+button.ghost{background:rgba(255,255,255,.75);color:var(--ink2);border:1.5px solid rgba(180,160,230,.4)}
+button.sm{padding:5px 10px;font-size:12px;border-radius:8px}
+button:active{transform:scale(.96)}
+input,select,textarea{border:1.5px solid rgba(180,160,230,.4);border-radius:10px;padding:8px 10px;font-size:13px;
+  background:rgba(255,255,255,.8);color:var(--ink);outline:none;font-family:inherit;min-width:0}
+input:focus,select:focus,textarea:focus{border-color:var(--purple)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grow{flex:1}
+.pill{padding:5px 13px;border-radius:999px;font-size:12px;cursor:pointer;background:rgba(255,255,255,.7);
+  color:var(--ink2);border:1.5px solid rgba(180,160,230,.3);transition:.15s}
+.pill.on{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border-color:transparent;font-weight:600}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;color:#fff;font-weight:600}
+.tag.hi{background:var(--hi)}.tag.mid{background:var(--mid)}.tag.lo{background:var(--lo)}
+.streak{font-size:12px;color:#e0709c;font-weight:700}
+.empty{text-align:center;color:var(--ink2);font-size:13px;padding:18px 0}
+.check{width:22px;height:22px;border-radius:8px;border:2px solid rgba(180,160,230,.6);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:#fff;color:transparent;transition:.15s}
+.check.done{background:linear-gradient(135deg,var(--green),var(--pink));border-color:transparent;color:#fff}
+.list-item{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px dashed rgba(180,160,230,.3)}
+.list-item:last-child{border-bottom:none}
+.del{color:var(--red);cursor:pointer;font-size:16px;padding:2px 6px}
+.news-item{display:block;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.65);
+  margin-bottom:8px;text-decoration:none;color:var(--ink);font-size:13.5px;line-height:1.5;
+  border:1px solid rgba(255,255,255,.9);transition:.15s}
+.news-item:active{background:rgba(255,220,238,.9)}
+.news-item .src{font-size:11px;color:var(--mid);font-weight:700;margin-right:6px}
+.progress{height:10px;border-radius:99px;background:rgba(180,160,230,.25);overflow:hidden}
+.progress>div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--purple),var(--blue));transition:width .4s}
+.xhs{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(255,240,246,.9);
+  border:1.5px solid var(--pink);color:#e0709c;font-size:12.5px;text-decoration:none;font-weight:600;margin:0 6px 6px 0}
+.ai-box{background:linear-gradient(135deg,rgba(255,225,240,.6),rgba(225,220,255,.6));border-radius:14px;padding:12px;font-size:13px;line-height:1.8;margin-top:10px;white-space:pre-wrap}
+.tree-wrap{text-align:center;padding:10px 0}
+.month-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.month-bar .m{padding:6px 12px;border-radius:10px;font-size:12px;cursor:pointer;white-space:nowrap;
+  background:rgba(255,255,255,.7);color:var(--ink2);border:1.5px solid transparent}
+.month-bar .m.on{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-weight:600}
+.field{margin-bottom:8px}
+.field label{font-size:12px;color:var(--ink2);display:block;margin-bottom:4px}
+.field textarea{width:100%;min-height:56px;resize:vertical}
+.meal-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.meal-row input{flex:1}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(90,70,130,.92);color:#fff;
+  padding:10px 20px;border-radius:99px;font-size:13px;z-index:999;animation:fadein .3s;pointer-events:none}
+.tip{font-size:11px;color:var(--ink2);line-height:1.6}
+@media (max-width:640px){
+  nav{width:66px}.nav-item{width:54px;font-size:9.5px}.nav-item .ico{font-size:17px}
+  main{padding:16px 12px 90px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<nav id="nav">
+  <div class="logo">❄️</div>
+  <div class="nav-item" data-p="habit"><span class="ico">🌱</span>习惯养成</div>
+  <div class="nav-item" data-p="drama"><span class="ico">📺</span>追剧</div>
+  <div class="nav-item" data-p="food"><span class="ico">🍜</span>美食</div>
+  <div class="nav-item" data-p="work"><span class="ico">💼</span>工作</div>
+  <div class="nav-item" data-p="news"><span class="ico">📰</span>新闻热点</div>
+  <div class="nav-item" data-p="media"><span class="ico">📕</span>我的自媒体</div>
+  <div class="nav-item" data-p="diary"><span class="ico">💭</span>心情日记</div>
+  <div class="nav-item" data-p="review"><span class="ico">🌳</span>每月复盘</div>
+  <div class="nav-item" data-p="help" style="margin-top:auto"><span class="ico">📲</span>装到桌面</div>
+</nav>
+<main>
+  <!-- 习惯养成 -->
+  <section class="page" id="p-habit">
+    <h1 class="pg-title">🌱 习惯养成</h1><div class="pg-sub" id="habit-date"></div>
+    <div class="card">
+      <h2>☀️ 每日晨起温开水 <span class="streak" id="water-streak"></span></h2>
+      <div class="row">
+        <div class="check" id="water-check" onclick="toggleWater()">✓</div>
+        <div class="grow" style="font-size:14px" id="water-label">今天喝了吗？</div>
+      </div>
+      <div class="tip" style="margin-top:8px">连续完成天数 = 最近不间断打卡天数，勾选即记录。</div>
+    </div>
+    <div class="card">
+      <h2>🧍 上班期间站立/活动提醒（每1小时，活动10分钟）</h2>
+      <div class="row">
+        <span class="pill" id="stand-pill" onclick="toggleStand()">提醒已关闭</span>
+        <span class="tip" id="stand-status">开启后，工作日 9:00–18:00 每小时弹窗提醒你起来活动10分钟。</span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <span class="tip" id="stand-next"></span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🍚 三餐记录</h2>
+      <div id="meals"></div>
+      <button class="sm" onclick="saveMeals()">💾 保存今日三餐</button>
+    </div>
+  </section>
+
+  <!-- 追剧 -->
+  <section class="page" id="p-drama">
+    <h1 class="pg-title">📺 追剧</h1><div class="pg-sub">红果短剧 & 视频 · 自动算未看集数、倒计时、播期预约提醒</div>
+    <div class="card">
+      <h2>➕ 添加剧目</h2>
+      <div class="row">
+        <select id="d-type"><option>红果短剧</option><option>视频</option></select>
+        <input id="d-name" placeholder="剧名" class="grow" style="max-width:160px">
+        <input id="d-total" type="number" placeholder="总集数" style="width:80px">
+        <input id="d-watched" type="number" placeholder="已看" style="width:70px">
+        <input id="d-stage" placeholder="阶段(如:第一季)" style="width:100px">
+        <input id="d-deadline" type="date" title="截止日期">
+        <input id="d-airdate" type="date" title="剧播日期(预约提醒)">
+        <button onclick="addDrama()">添加</button>
+      </div>
+    </div>
+    <div id="drama-list"></div>
+  </section>
+
+  <!-- 美食 -->
+  <section class="page" id="p-food">
+    <h1 class="pg-title">🍜 美食</h1><div class="pg-sub">记录购买/开封日期，过期前3天自动提醒</div>
+    <div class="card">
+      <h2>➕ 添加食品</h2>
+      <div class="row">
+        <input id="f-name" placeholder="食品名称" class="grow" style="max-width:150px">
+        <input id="f-buy" type="date" title="购买日期">
+        <input id="f-open" type="date" title="开封/使用日期">
+        <input id="f-exp" type="date" title="过期日期">
+        <button onclick="addFood()">添加</button>
+      </div>
+      <div class="tip" style="margin-top:6px">保存后每天打开会自动检查：距离过期 ≤3 天会弹出提醒。</div>
+    </div>
+    <div id="food-list"></div>
+  </section>
+
+  <!-- 工作 -->
+  <section class="page" id="p-work">
+    <h1 class="pg-title">💼 工作</h1><div class="pg-sub">自定义待办 · 优先级 + 截止日期</div>
+    <div class="card">
+      <h2>➕ 新待办</h2>
+      <div class="row">
+        <input id="t-text" placeholder="任务内容" class="grow">
+        <select id="t-pri"><option value="hi">高优先级</option><option value="mid" selected>中优先级</option><option value="lo">低优先级</option></select>
+        <input id="t-due" type="date" title="截止日期">
+        <button onclick="addTask()">添加</button>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <span class="pill on" data-f="today" onclick="setFilter('today',this)">今日待办</span>
+      <span class="pill" data-f="all" onclick="setFilter('all',this)">全部</span>
+      <span class="pill" data-f="doing" onclick="setFilter('doing',this)">进行中</span>
+      <span class="pill" data-f="done" onclick="setFilter('done',this)">已完成</span>
+    </div>
+    <div class="card" id="task-list"></div>
+  </section>
+
+  <!-- 新闻热点 -->
+  <section class="page" id="p-news">
+    <h1 class="pg-title">📰 新闻热点</h1><div class="pg-sub" id="news-sub">每天自动轮换推荐 · 点击跳转原文</div>
+    <div class="card">
+      <h2>🏛️ 权威媒体直达</h2>
+      <div class="row">
+        <a class="xhs" href="https://news.cctv.com/" target="_blank">央视新闻</a>
+        <a class="xhs" href="http://www.people.com.cn/" target="_blank">人民网</a>
+        <a class="xhs" href="http://www.news.cn/" target="_blank">新华网</a>
+        <a class="xhs" href="https://news.cctv.com/special/shouye/index.shtml" target="_blank">央视新闻联播</a>
+        <a class="xhs" href="http://politics.people.com.cn/" target="_blank">人民网·时政</a>
+        <a class="xhs" href="http://www.news.cn/politics/" target="_blank">新华网·时政</a>
+      </div>
+      <div class="tip">每天从热点池中按日期轮换推荐一批新闻入口，点击即可直达权威媒体页面。</div>
+    </div>
+    <div class="card"><h2 id="news-title">🔥 今日热点推荐</h2><div id="news-list"></div></div>
+  </section>
+
+  <!-- 我的自媒体 -->
+  <section class="page" id="p-media">
+    <h1 class="pg-title">📕 我的自媒体</h1><div class="pg-sub">小红书热点关键词直达 + AI 爆款拆解</div>
+    <div class="card">
+      <h2>🔍 热点关键词（点击直达小红书搜索）</h2>
+      <div>
+        <a class="xhs" target="_blank" href="https://www.xiaohongshu.com/search_result?keyword=小个子穿搭推荐">小个子穿搭推荐</a>
+        <a class="xhs" target="_blank" href="https://www.xiaohongshu.com/search_result?keyword=155穿搭推荐">155穿搭推荐</a>
+        <a class="xhs" target="_blank" href="https://www.xiaohongshu.com/search_result?keyword=租房好物">租房好物</a>
+        <a class="xhs" target="_blank" href="https://www.xiaohongshu.com/search_result?keyword=节日优惠">节日优惠</a>
+      </div>
+      <div class="tip">浏览器打开后即可浏览小红书实时热点笔记。</div>
+    </div>
+    <div class="card">
+      <h2>🤖 AI 爆款拆解</h2>
+      <div class="row" style="margin-bottom:8px">
+        <input id="ai-title" class="grow" placeholder="粘贴小红书笔记标题，例：155小个子秋冬必穿的3套显高搭配">
+        <button onclick="aiAnalyze()">拆解</button>
+      </div>
+      <textarea id="ai-content" style="width:100%;min-height:70px" placeholder="(可选)粘贴笔记正文/要点，拆解更精准"></textarea>
+      <div id="ai-result"></div>
+    </div>
+    <div class="card">
+      <h2>💡 我的选题灵感库</h2>
+      <div class="row" style="margin-bottom:8px">
+        <input id="idea-text" class="grow" placeholder="记一个选题/灵感">
+        <button onclick="addIdea()">记录</button>
+      </div>
+      <div id="idea-list"></div>
+    </div>
+  </section>
+
+  <!-- 心情日记 -->
+  <section class="page" id="p-diary">
+    <h1 class="pg-title">💭 心情日记</h1><div class="pg-sub">今天的心情是什么颜色的？</div>
+    <div class="card">
+      <h2>选择今日心情</h2>
+      <div class="row" id="mood-row" style="margin-bottom:10px"></div>
+      <textarea id="diary-text" style="width:100%;min-height:90px" placeholder="写下今天的心情、发生了什么……"></textarea>
+      <div class="row" style="margin-top:8px"><button onclick="saveDiary()">💾 保存今天的日记</button></div>
+    </div>
+    <div id="diary-list"></div>
+  </section>
+
+  <!-- 每月复盘 -->
+  <section class="page" id="p-review">
+    <h1 class="pg-title">🌳 每月复盘</h1><div class="pg-sub">计划 vs 实际 · 完成度越高小树越茁壮 · 按自然月独立记录</div>
+    <div class="card">
+      <div class="month-bar" id="month-bar"></div>
+    </div>
+    <div class="card">
+      <div class="tree-wrap" id="tree-wrap"></div>
+      <div style="text-align:center;font-size:13px;font-weight:700" id="tree-label"></div>
+      <div class="progress" style="margin-top:8px"><div id="tree-bar" style="width:0%"></div></div>
+    </div>
+    <div class="card" id="review-edit"></div>
+  </section>
+
+  <!-- 帮助 -->
+  <section class="page" id="p-help">
+    <h1 class="pg-title">📲 装到桌面 · 数据备份</h1>
+    <div class="card">
+      <h2>🌐 方式一：网页地址（推荐，数据最持久）</h2>
+      <div style="font-size:13.5px;line-height:2.1">
+        前提：本页已有一个 <b>https://</b> 开头的地址（GitHub Pages / Netlify / 自有服务器均可）。<br>
+        1️⃣ 用 <b>Safari</b> 打开该网址<br>
+        2️⃣ 点底部 <b>分享 ⬆️</b> → <b>「添加到主屏幕」</b><br>
+        3️⃣ 名称填 <b>玉雪</b> → 添加，桌面出现 ❄️ 图标，全屏启动 ✨
+      </div>
+    </div>
+    <div class="card">
+      <h2>⚠️ 方式二：本地文件（Safari 无法直接"添加"）</h2>
+      <div style="font-size:13.5px;line-height:2.1">
+        iOS 上「文件」App 预览 HTML 不会进 Safari，所以<b>没有分享按钮可用</b>。可行做法：<br>
+        · 把文件放到 iCloud Drive，用 <b>「快捷指令」</b>创建一个「打开网址」动作，URL 填文件的 <code>file://</code> 路径，再把快捷指令添加到主屏幕（图标可自定义）。<br>
+        · 注意：<code>file://</code> 方式下数据可能随缓存被清空，务必用下面的备份功能。
+      </div>
+    </div>
+    <div class="card">
+      <h2>💾 数据备份 / 恢复</h2>
+      <div class="row" style="margin-bottom:8px">
+        <button class="sm" onclick="exportData()">📤 导出备份</button>
+        <button class="sm ghost" onclick="downloadBackup()">⬇️ 下载备份文件</button>
+      </div>
+      <textarea id="bak-box" style="width:100%;min-height:90px;font-size:11px" placeholder="备份码会显示在这里；恢复时把备份码粘贴到这里再点「导入」"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="sm" onclick="importData()">📥 导入恢复</button>
+        <span class="tip">备份码可存到备忘录/微信收藏，换手机也不丢。</span>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+/* ============ 工具 ============ */
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtCN=d=>{const x=new Date(d+"T00:00:00");return `${x.getMonth()+1}月${x.getDate()}日`;};
+function load(k,d){try{return JSON.parse(localStorage.getItem("yuxue_"+k))??d}catch(e){return d}}
+function save(k,v){localStorage.setItem("yuxue_"+k,JSON.stringify(v))}
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
+
+/* ============ 导航 ============ */
+function go(p){
+  $$(".nav-item").forEach(n=>n.classList.toggle("active",n.dataset.p===p));
+  $$(".page").forEach(pg=>pg.classList.toggle("active",pg.id==="p-"+p));
+  if(p==="review")renderReview();
+  if(p==="news")renderNews();
+  if(p==="diary")renderDiary();
+  window.scrollTo(0,0);
+}
+$$(".nav-item").forEach(n=>n.onclick=()=>go(n.dataset.p));
+
+/* ============ 习惯养成 ============ */
+$("#habit-date").textContent=new Date().toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric",weekday:"long"});
+let water=load("water",{}); // {date:true}
+function waterStreak(){
+  let s=0,d=new Date();
+  if(!water[today()])d.setDate(d.getDate()-1); // 今天没打则从昨天起算
+  while(water[d.toISOString().slice(0,10)]){s++;d.setDate(d.getDate()-1)}
+  return s;
+}
+function renderWater(){
+  const done=!!water[today()],st=waterStreak();
+  $("#water-check").classList.toggle("done",done);
+  $("#water-label").textContent=done?"今天已喝温开水 ✔ 太棒啦":"别忘了晨起一杯温开水哦";
+  $("#water-streak").textContent=`🔥 连续 ${st} 天`;
+}
+function toggleWater(){ if(water[today()]){delete water[today()];toast("已取消今日打卡")}else{water[today()]=true;toast("打卡成功！继续保持 💧")} save("water",water);renderWater() }
+renderWater();
+
+let standOn=load("standOn",false),standTimer=null,standNext=0;
+function renderStand(){
+  $("#stand-pill").classList.toggle("on",standOn);
+  $("#stand-pill").textContent=standOn?"🔔 提醒已开启":"💤 提醒已关闭";
+  $("#stand-next").textContent=standOn&&standNext?("下次提醒："+new Date(standNext).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})):"";
+}
+function toggleStand(){
+  standOn=!standOn;save("standOn",standOn);
+  if(standOn){toast("已开启，每小时提醒你活动 🧍");scheduleStand()}renderStand();
+}
+function scheduleStand(){
+  clearTimeout(standTimer);if(!standOn)return;
+  const now=new Date();
+  if(now.getDay()===0||now.getDay()===6){$("#stand-next").textContent="周末不提醒，好好休息~";return}
+  standNext=Date.now()+3600000;
+  standTimer=setTimeout(()=>{
+    const h=new Date().getHours();
+    if(h>=9&&h<18){ if("Notification" in window&&Notification.permission==="granted")new Notification("🧍 起来活动一下吧！",{body:"站立或活动 10 分钟，对腰和眼睛都好~"});
+      else alert("🧍 该起来站立/活动 10 分钟啦！"); scheduleStand();
+    }else scheduleStand();
+  },3600000);
+}
+if(standOn&&"Notification" in window&&Notification.permission==="default")Notification.requestPermission();
+renderStand();
+
+let meals=load("meals",{});
+const MEALS=["早餐","午餐","晚餐"];
+function renderMeals(){
+  const t=meals[today()]||["","",""];
+  $("#meals").innerHTML=MEALS.map((m,i)=>`<div class="meal-row"><span style="font-size:13px;width:44px">${m}</span><input id="meal-${i}" placeholder="${m}吃了什么？" value="${t[i]||""}"></div>`).join("");
+}
+function saveMeals(){meals[today()]=MEALS.map((_,i)=>$("#meal-"+i).value);save("meals",meals);toast("三餐已记录 🍚")}
+renderMeals();
+
+/* ============ 追剧 ============ */
+let dramas=load("dramas",[]);
+function daysLeft(d){return d?daysBetween(today(),d):null}
+function renderDramas(){
+  if(!dramas.length){$("#drama-list").innerHTML='<div class="card empty">还没有剧目，快添加一部开始追吧 🍿</div>';return}
+  $("#drama-list").innerHTML=dramas.map((d,i)=>{
+    const left=d.total-d.watched, pct=Math.min(100,Math.round(d.watched/d.total*100));
+    const dl=daysLeft(d.deadline), al=daysLeft(d.airdate);
+    return `<div class="card">
+      <h2>📺 ${d.name} <span class="tag" style="background:${d.type==="红果短剧"?"#ff7bac":"#7ea8f0"}">${d.type}</span>
+      ${d.stage?`<span class="tag" style="background:#9b8ec4">${d.stage}</span>`:""}</h2>
+      <div style="font-size:12.5px;color:var(--ink2);margin-bottom:6px">已看 ${d.watched}/${d.total} 集 · 未看 <b style="color:#e0709c">${left}</b> 集 · 进度 ${pct}%</div>
+      <div class="progress"><div style="width:${pct}%"></div></div>
+      <div class="row" style="margin-top:10px">
+        <button class="sm ghost" onclick="bump(${i},-1)">−1集</button>
+        <button class="sm" onclick="bump(${i},1)">+1集</button>
+        ${dl!==null?`<span class="tag" style="background:${dl<0?"#b0a6c8":dl<=3?"#ff8fa8":"#7ea8f0"}">截止${dl<0?"已过":dl+"天后"}</span>`:""}
+        ${al!==null?`<span class="tag" style="background:#63c98a">${al<0?"已开播":al+"天后开播 ⏰"}</span>`:""}
+        <span style="flex:1"></span>
+        <span class="del" onclick="delDrama(${i})">🗑</span>
+      </div></div>`;
+  }).join("");
+}
+function addDrama(){
+  const n=$("#d-name").value.trim(),t=+$("#d-total").value;
+  if(!n||!t){toast("请填剧名和总集数");return}
+  dramas.push({type:$("#d-type").value,name:n,total:t,watched:Math.min(+$("#d-watched").value||0,t),
+    stage:$("#d-stage").value.trim(),deadline:$("#d-deadline").value,airdate:$("#d-airdate").value});
+  save("dramas",dramas);renderDramas();
+  ["d-name","d-total","d-watched","d-stage","d-deadline","d-airdate"].forEach(id=>$("#"+id).value="");
+  toast("已加入追剧清单 🍿");
+  // 播期预约提醒
+  const a=$("#d-airdate").value||dramas[dramas.length-1].airdate;
+  if(a&&daysLeft(a)>0&&daysLeft(a)<=30&&"Notification" in window){
+    setTimeout(()=>new Notification("📺 剧集开播提醒",{body:`《${n}》${fmtCN(a)} 开播，别忘了追！`}),0);
+  }
+}
+function bump(i,x){dramas[i].watched=Math.max(0,Math.min(dramas[i].total,dramas[i].watched+x));save("dramas",dramas);renderDramas()}
+function delDrama(i){if(confirm("确定删除《"+dramas[i].name+"》？")){dramas.splice(i,1);save("dramas",dramas);renderDramas()}}
+renderDramas();
+
+/* ============ 美食 ============ */
+let foods=load("foods",[]);
+function foodState(f){
+  const dl=daysBetween(today(),f.exp);
+  if(dl<0)return{t:"已过期",c:"#b0a6c8",warn:false};
+  if(dl<=3)return{t:dl===0?"今天到期⚠️":dl+"天后过期",c:"#ff8fa8",warn:true};
+  return{t:dl+"天后过期",c:"#63c98a",warn:false};
+}
+function renderFoods(){
+  if(!foods.length){$("#food-list").innerHTML='<div class="card empty">还没有记录食品哦 🛒</div>';return}
+  $("#food-list").innerHTML=foods.map((f,i)=>{
+    const s=foodState(f);
+    return `<div class="card" ${s.warn?'style="border-color:var(--red);box-shadow:0 6px 20px rgba(255,143,168,.25)"':""}>
+      <h2>🍽️ ${f.name} <span class="tag" style="background:${s.c}">${s.t}</span></h2>
+      <div style="font-size:12.5px;color:var(--ink2)">购买：${fmtCN(f.buy)} · 开封/使用：${f.open?fmtCN(f.open):"未开封"} · 过期：${fmtCN(f.exp)}</div>
+      <div class="row" style="margin-top:8px;justify-content:flex-end"><span class="del" onclick="delFood(${i})">🗑</span></div></div>`;
+  }).join("");
+}
+function addFood(){
+  const n=$("#f-name").value.trim(),b=$("#f-buy").value,e=$("#f-exp").value;
+  if(!n||!e){toast("请填名称和过期日期");return}
+  foods.push({name:n,buy:b||today(),open:$("#f-open").value,exp:e});
+  save("foods",foods);renderFoods();
+  ["f-name","f-buy","f-open","f-exp"].forEach(id=>$("#"+id).value="");
+  toast("已记录 🍽️");
+}
+function delFood(i){if(confirm("删除「"+foods[i].name+"」？")){foods.splice(i,1);save("foods",foods);renderFoods()}}
+renderFoods();
+
+/* ============ 工作 ============ */
+let tasks=load("tasks",[]),taskFilter="today";
+const PRI={hi:["高","hi"],mid:["中","mid"],lo:["低","lo"]};
+function setFilter(f,el){taskFilter=f;$$("[data-f]").forEach(p=>p.classList.toggle("on",p.dataset.f===f));renderTasks()}
+function addTask(){
+  const t=$("#t-text").value.trim();
+  if(!t){toast("先写点任务内容吧");return}
+  tasks.push({text:t,pri:$("#t-pri").value,due:$("#t-due").value,done:false,created:today()});
+  save("tasks",tasks);$("#t-text").value="";renderTasks();toast("已添加 ✍️");
+}
+function toggleTask(i){tasks[i].done=!tasks[i].done;save("tasks",tasks);renderTasks()}
+function delTask(i){tasks.splice(i,1);save("tasks",tasks);renderTasks()}
+const PRIORD={hi:0,mid:1,lo:2};
+function renderTasks(){
+  const t=today();
+  let list=tasks.filter(x=>{
+    if(taskFilter==="done")return x.done;
+    if(taskFilter==="doing")return !x.done;
+    if(taskFilter==="today")return !x.done&&(!x.due||x.due<=t);
+    return true;
+  });
+  list.sort((a,b)=>(a.done-b.done)||(PRIORD[a.pri]-PRIORD[b.pri])||((a.due||"9999")<(b.due||"9999")?-1:1));
+  if(!list.length){$("#task-list").innerHTML='<div class="empty">这里空空如也 ✨</div>';return}
+  $("#task-list").innerHTML=list.map(x=>{
+    const i=tasks.indexOf(x),due=x.due?`<span style="font-size:11px;color:${x.due<t?"#ff8fa8":"#7a6f96"}">📅 ${fmtCN(x.due)}${!x.done&&x.due<t?" 已逾期":""}</span>`:"";
+    return `<div class="list-item"><div class="check ${x.done?"done":""}" onclick="toggleTask(${i})">✓</div>
+      <div class="grow" style="font-size:14px;${x.done?"text-decoration:line-through;opacity:.5":""}">${x.text}</div>
+      ${due}<span class="tag ${PRI[x.pri][1]}">${PRI[x.pri][0]}</span><span class="del" onclick="delTask(${i})">🗑</span></div>`;
+  }).join("");
+}
+renderTasks();
+
+/* ============ 新闻热点（每天轮换） ============ */
+const NEWS_POOL=[
+  {src:"央视新闻",t:"时政要闻·头条",u:"https://news.cctv.com/china/"},
+  {src:"人民网",t:"时政频道",u:"http://politics.people.com.cn/"},
+  {src:"新华网",t:"时政热点",u:"http://www.news.cn/politics/"},
+  {src:"央视新闻",t:"国际新闻",u:"https://news.cctv.com/world/"},
+  {src:"人民网",t:"国际频道",u:"http://world.people.com.cn/"},
+  {src:"新华网",t:"国际频道",u:"http://www.news.cn/world/"},
+  {src:"央视新闻",t:"财经报道",u:"https://jingji.cctv.com/"},
+  {src:"人民网",t:"财经频道",u:"http://finance.people.com.cn/"},
+  {src:"新华网",t:"财经频道",u:"http://www.news.cn/fortune/"},
+  {src:"央视新闻",t:"科技新闻",u:"https://news.cctv.com/science/"},
+  {src:"人民网",t:"科技频道",u:"http://scitech.people.com.cn/"},
+  {src:"新华网",t:"科技频道",u:"http://www.news.cn/tech/"},
+  {src:"央视新闻",t:"社会民生",u:"https://society.cctv.com/"},
+  {src:"人民网",t:"社会频道",u:"http://society.people.com.cn/"},
+  {src:"新华网",t:"社会频道",u:"http://www.news.cn/shuhua/"},
+  {src:"央视新闻",t:"体育新闻",u:"https://sports.cctv.com/"},
+  {src:"人民网",t:"体育频道",u:"http://sports.people.com.cn/"},
+  {src:"新华网",t:"体育频道",u:"http://www.news.cn/sports/"},
+  {src:"央视新闻",t:"健康养生",u:"https://health.cctv.com/"},
+  {src:"人民网",t:"健康频道",u:"http://health.people.com.cn/"},
+  {src:"新华网",t:"健康频道",u:"http://www.news.cn/health/"}
+];
+function renderNews(){
+  const seed=[...today()].reduce((a,c)=>a+c.charCodeAt(0),0);
+  const picked=[];let s=seed;
+  while(picked.length<8){picked.push(NEWS_POOL[s%NEWS_POOL.length]);s=(s*31+7)%100003}
+  const seen=new Set(),uniq=picked.filter(p=>!seen.has(p.u)&&seen.add(p.u));
+  $("#news-title").textContent=`🔥 今日热点推荐 · ${fmtCN(today())}`;
+  $("#news-list").innerHTML=uniq.map(n=>`<a class="news-item" href="${n.u}" target="_blank"><span class="src">${n.src}</span>${n.t} →</a>`).join("");
+}
+
+/* ============ 我的自媒体 ============ */
+let ideas=load("ideas",[]);
+function renderIdeas(){
+  $("#idea-list").innerHTML=ideas.length?ideas.map((t,i)=>`<div class="list-item"><div class="grow" style="font-size:13.5px">${t}</div><span class="del" onclick="delIdea(${i})">🗑</span></div>`).join(""):'<div class="empty">灵感一闪就记下来 💡</div>';
+}
+function addIdea(){const v=$("#idea-text").value.trim();if(!v)return;ideas.unshift(v);save("ideas",ideas);$("#idea-text").value="";renderIdeas()}
+function delIdea(i){ideas.splice(i,1);save("ideas",ideas);renderIdeas()}
+renderIdeas();
+
+function aiAnalyze(){
+  const title=$("#ai-title").value.trim();
+  if(!title){toast("先粘贴一个标题哦");return}
+  const content=$("#ai-content").value.trim();
+  const len=content?content.length:0;
+  const hasNum=/\d/.test(title),hasEmoji=/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(title);
+  const hooks=[["数字型标题",hasNum],["表情符号吸睛",hasEmoji]];
+  let out=`📌 标题拆解：《${title}》\n`;
+  out+=`· 标题长度 ${title.length} 字（小红书最佳 15–20 字）${title.length>24?"，偏长建议精简":""}${title.length<10?"，偏短建议补充利益点":""}\n`;
+  out+=`· ${hasNum?"✔ 含具体数字，可信度和点击率更高":"✘ 建议加入数字，如「3个技巧」「5天见效」"}\n`;
+  out+=`· ${hasEmoji?"✔ 含表情，视觉更吸睛":"✘ 可在标题/封面加入 1–2 个表情"}\n`;
+  out+=`\n🎯 爆款逻辑拆解：\n`;
+  out+=`1. 目标人群：${/155|小个子/.test(title)?"小个子/155cm 女生（痛点明确，垂直度高）":"需明确目标人群标签"}\n`;
+  out+=`2. 痛点/痒点：${/显高|显瘦|必穿|平价|好物/.test(title)?"直击身材焦虑/性价比需求 ✅":"建议点明痛点（如显高、省空间、省钱）"}\n`;
+  out+=`3. 内容结构建议：封面图（前后对比/九宫格）→ 首句钩子 → 分点干货 → 结尾引导互动\n`;
+  out+=`4. 关键词布局：正文与标签中埋「${/穿搭/.test(title)?"小个子穿搭 155穿搭 OOTD":"租房好物 平价好物 收纳"}」提升搜索流量\n`;
+  if(len)out+=`5. 正文 ${len} 字${len<100?"，略短，建议 200–500 字增加收藏率":len>800?"，偏长，建议分点精简":"，长度合适 ✅"}\n`;
+  out+=`\n💡 行动建议：发布时间选晚上 19:00–22:00 或周末；首图用大字报标题；结尾提问引导评论。`;
+  $("#ai-result").innerHTML='<div class="ai-box">'+out.replace(/</g,"&lt;")+'</div>';
+}
+
+/* ============ 心情日记 ============ */
+const MOODS=[["😄","超棒"],["🙂","不错"],["😐","一般"],["😢","难过"],["😠","烦躁"],["😴","疲惫"]];
+let moodSel=null,diary=load("diary",[]);
+function renderMoodRow(){
+  $("#mood-row").innerHTML=MOODS.map((m,i)=>`<span class="pill" data-mi="${i}" onclick="pickMood(${i})" style="font-size:15px;padding:7px 13px">${m[0]} ${m[1]}</span>`).join("");
+}
+function pickMood(i){moodSel=i;$$("[data-mi]").forEach(el=>el.classList.toggle("on",+el.dataset.mi===i))}
+function renderDiary(){
+  if(!diary.length){$("#diary-list").innerHTML='<div class="card empty">还没有日记，从今天开始吧 🌷</div>';return}
+  $("#diary-list").innerHTML=diary.map((d,i)=>`<div class="card"><h2>${d.mood!=null?MOODS[d.mood][0]:"📝"} ${d.date} <span style="font-size:12px;color:var(--ink2)">${d.mood!=null?MOODS[d.mood][1]:""}</span></h2>
+    <div style="font-size:13.5px;line-height:1.8;white-space:pre-wrap">${d.text.replace(/</g,"&lt;")}</div>
+    <div class="row" style="justify-content:flex-end;margin-top:6px"><span class="del" onclick="delDiary(${i})">🗑</span></div></div>`).join("");
+}
+function saveDiary(){
+  const text=$("#diary-text").value.trim();
+  if(!text){toast("写点什么再保存吧");return}
+  diary.unshift({date:today(),mood:moodSel,text});
+  save("diary",diary);$("#diary-text").value="";moodSel=null;$$("[data-mi]").forEach(el=>el.classList.remove("on"));
+  renderDiary();toast("今天的日记已保存 💭");
+}
+function delDiary(i){if(confirm("删除这条日记？")){diary.splice(i,1);save("diary",diary);renderDiary()}}
+renderMoodRow();renderDiary();
+
+/* ============ 每月复盘（小树成长） ============ */
+let reviews=load("reviews",{}); // {"2026-10":{plan,actual,items:[{name,plan,actual}]}}
+function monthKey(d){return d.slice(0,7)}
+function curMonth(){return monthKey(today())}
+let selMonth=curMonth();
+function genMonth(k){return{plan:"",actual:"",items:[]}}
+function monthKeys(){
+  const set=new Set(Object.keys(reviews));set.add(curMonth());
+  // 回溯：加入记录中出现过或本地存在的历史月
+  return [...set].sort().reverse();
+}
+function renderReview(){
+  // 月份栏
+  const now=new Date();
+  const keys=monthKeys();
+  if(!keys.includes(selMonth))selMonth=curMonth();
+  $("#month-bar").innerHTML=keys.map(k=>{
+    const [y,m]=k.split("-");
+    return `<span class="m ${k===selMonth?"on":""}" onclick="selM('${k}')">${y}年${+m}月${k===curMonth()?"(本月)":""}</span>`;
+  }).join("")+`<span class="m" onclick="addPrevMonth()">＋ 补填历史月</span>`;
+  const r=reviews[selMonth]||(reviews[selMonth]=genMonth());
+  // 完成度
+  const items=r.items||[];
+  const pctAll=items.length?Math.round(items.reduce((a,x)=>a+Math.min(1,(+x.actual||0)/Math.max(1,+x.plan||1)),0)/items.length*100):0;
+  // 树
+  const stages=[
+    [0,"🌱 一颗小种子",60],[20,"🌿 冒出小芽",80],[40,"🪴 小树苗",100],
+    [60,"🌳 小树长大",120],[80,"🌲 枝繁叶茂",140],[100,"🌸🌸 开花结果的大树",160]
+  ];
+  const st=stages.find(s=>pctAll<s[0])||stages[stages.length-1];
+  const size=st[2];
+  $("#tree-wrap").innerHTML=`<div style="font-size:${size/2}px">${st[1]}</div>`;
+  $("#tree-label").textContent=`${selMonth.replace("-","年")+"月"} · 完成度 ${pctAll}% · ${st[1].split(" ")[1]||""}`;
+  $("#tree-bar").style.width=pctAll+"%";
+  // 编辑区
+  $("#review-edit").innerHTML=`
+    <h2>📋 ${selMonth.replace("-","年")+"月"} 计划 vs 实际</h2>
+    ${items.map((x,i)=>`<div class="row" style="margin-bottom:8px">
+      <input class="grow" placeholder="目标名称" value="${x.name||""}" oninput="revItem(${i},'name',this.value)">
+      <input type="number" placeholder="计划量" style="width:80px" value="${x.plan||""}" oninput="revItem(${i},'plan',this.value)">
+      <input type="number" placeholder="实际量" style="width:80px" value="${x.actual||""}" oninput="revItem(${i},'actual',this.value)">
+      <span class="del" onclick="delRevItem(${i})">🗑</span></div>`).join("")}
+    <div class="row" style="margin:10px 0">
+      <button class="sm ghost" onclick="addRevItem()">➕ 添加一条计划</button>
+      <button class="sm" onclick="saveReview()">💾 保存</button>
+      ${selMonth!==curMonth()?"":'<span class="tip">新月打开工作台会自动生成空白模板</span>'}
+    </div>
+    <div class="field"><label>本月总结 / 下月计划</label>
+      <textarea oninput="reviews['${selMonth}'].plan=this.value" placeholder="这个月做了什么？下个月想完成什么？">${r.plan||""}</textarea></div>`;
+}
+function selM(k){selMonth=k;renderReview()}
+function addPrevMonth(){
+  const k=prompt("输入要补填的月份（格式 2026-05）");
+  if(!k||!/^\d{4}-\d{2}$/.test(k)){if(k)toast("格式：2026-05");return}
+  selMonth=k;renderReview();
+}
+function revItem(i,f,v){reviews[selMonth].items[i][f]=v;autoSaveRev()}
+function addRevItem(){reviews[selMonth].items.push({name:"",plan:"",actual:""});renderReview()}
+function delRevItem(i){reviews[selMonth].items.splice(i,1);renderReview()}
+function autoSaveRev(){save("reviews",reviews)}
+function saveReview(){autoSaveRev();toast("复盘已保存 🌳");renderReview()}
+// 新月自动生成空白模板（打开即生成当月）
+if(!reviews[curMonth()])reviews[curMonth()]=genMonth();
+save("reviews",reviews);
+renderReview();
+
+/* ============ 数据备份 / 恢复 ============ */
+const DATA_KEYS=["water","standOn","meals","dramas","foods","tasks","ideas","diary","reviews"];
+function collectData(){
+  const o={};DATA_KEYS.forEach(k=>o[k]=load(k,null));o._backupAt=new Date().toISOString();return o;
+}
+function exportData(){
+  const s=JSON.stringify(collectData());
+  $("#bak-box").value=s;
+  try{navigator.clipboard&&navigator.clipboard.writeText(s)}catch(e){}
+  toast("备份码已生成（已尝试复制）");
+}
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify(collectData(),null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="玉雪备份_"+today()+".json";
+  a.click();toast("开始下载备份文件 ⬇️");
+}
+function importData(){
+  const v=$("#bak-box").value.trim();
+  if(!v){toast("请先粘贴备份码");return}
+  try{
+    const o=JSON.parse(v);
+    if(!o||typeof o!=="object")throw 0;
+    if(!confirm("导入将覆盖当前数据，确定继续？"))return;
+    DATA_KEYS.forEach(k=>{if(o[k]!==undefined&&o[k]!==null)localStorage.setItem("yuxue_"+k,JSON.stringify(o[k]))});
+    toast("恢复成功，正在刷新…");
+    setTimeout(()=>location.reload(),800);
+  }catch(e){toast("备份码格式有误，请检查")}
+}
+
+/* ============ 启动检查提醒 ============ */
+setTimeout(()=>{
+  // 美食过期提醒
+  const warns=foods.filter(f=>foodState(f).warn);
+  if(warns.length){
+    if("Notification" in window&&Notification.permission==="granted")
+      new Notification("🍽️ 食品保质期提醒",{body:warns.map(f=>`${f.name}：${foodState(f).t}`).join("\n")});
+    else toast("⚠️ "+warns.map(f=>`${f.name} ${foodState(f).t}`).join("，"));
+  }
+  // 追剧开播提醒
+  dramas.forEach(d=>{
+    const al=daysLeft(d.airdate);
+    if(al===0)toast(`📺 《${d.name}》今天开播啦！`);
+  });
+},1500);
+go("habit");
+</script>
+</body>
+</html>
